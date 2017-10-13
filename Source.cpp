@@ -1,49 +1,58 @@
 ﻿#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
+#pragma comment(lib, "shlwapi")
+
 #include <windows.h>
+#include <shlwapi.h>
 
 ////////////////////////////////////////////
-// URL エンコード行う（文字コードはUTF-8で変換）
+// 入力されたUnicode文字列のURLエンコード行う
 // lpszSrc: URLエンコード対象の文字列(Unicode)
 // lpszDst: URLエンコード出力の文字列(Unicode)バッファ、NULL指定可
 // 戻り値: 出力バッファの文字列(Unicode)長、NULLを含む
 ////////////////////////////////////////////
 int UrlEncode(LPCWSTR lpszSrc, LPWSTR lpszDst)
 {
+	DWORD iDst = 0;
 	const DWORD dwTextLengthA = WideCharToMultiByte(CP_UTF8, 0, lpszSrc, -1, 0, 0, 0, 0);
 	LPSTR szUTF8TextA = (LPSTR)GlobalAlloc(GMEM_FIXED, dwTextLengthA); // NULL を含んだ文字列バッファを確保
-	WideCharToMultiByte(CP_UTF8, 0, lpszSrc, -1, szUTF8TextA, dwTextLengthA, 0, 0);
-	DWORD iSrc = 0;
-	DWORD iDst = 0;
-	for (;;)
+	if (szUTF8TextA)
 	{
-		if (iSrc >= dwTextLengthA) break;
-		if (szUTF8TextA[iSrc] == '\0') break;
-		if (szUTF8TextA[iSrc] == '.' || szUTF8TextA[iSrc] == '_' || szUTF8TextA[iSrc] == '-')
+		if (WideCharToMultiByte(CP_UTF8, 0, lpszSrc, -1, szUTF8TextA, dwTextLengthA, 0, 0))
 		{
-			if (lpszDst) lpszDst[iDst] = (WCHAR)szUTF8TextA[iSrc];
+			DWORD iSrc = 0;
+			for (;;)
+			{
+				if (iSrc >= dwTextLengthA) break;
+				if (szUTF8TextA[iSrc] == '\0') break;
+				LPCSTR lpszUnreservedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+				if (StrChrA(lpszUnreservedCharacters, szUTF8TextA[iSrc]))
+				{
+					if (lpszDst) lpszDst[iDst] = (WCHAR)szUTF8TextA[iSrc];
+					++iDst;
+				}
+				else if (szUTF8TextA[iSrc] == ' ')
+				{
+					if (lpszDst) lpszDst[iDst] = L'+';
+					++iDst;
+				}
+				else
+				{
+					if (lpszDst) wsprintfW(&lpszDst[iDst], L"%%%02X", szUTF8TextA[iSrc] & 0xFF);
+					iDst += 3;
+				}
+				++iSrc;
+			}
+			if (lpszDst) lpszDst[iDst] = L'\0';
 			++iDst;
 		}
-		else if (szUTF8TextA[iSrc] == ' ')
-		{
-			if (lpszDst) lpszDst[iDst] = L'+';
-			++iDst;
-		}
-		else
-		{
-			if (lpszDst) wsprintfW(&lpszDst[iDst], L"%%%02X", szUTF8TextA[iSrc] & 0xFF);
-			iDst += 3;
-		}
-		++iSrc;
+		GlobalFree(szUTF8TextA);
 	}
-	if (lpszDst) lpszDst[iDst] = L'\0';
-	++iDst;
-	GlobalFree(szUTF8TextA);
 	return iDst; // NULL 文字を含む
 }
 
 ////////////////////////////////////////////
-// URL デーコード行う（文字コードはUTF-8と仮定）
+// 入力されたUnicode文字列のURLデーコード行う
 // lpszSrc: URLデコード対象の文字列(Unicode)
 // lpszDst: URLデコード出力の文字列(Unicode)バッファ、NULL指定可
 // 戻り値: 出力バッファの文字列(Unicode)長、NULLを含む
@@ -63,19 +72,15 @@ int UrlDecode(LPCWSTR lpszSrc, LPWSTR lpszDst)
 	LPSTR szUTF8TextA = (LPSTR)GlobalAlloc(GMEM_FIXED, iBuf + 1); // NULLを含める
 	for (iSrc = 0, iBuf = 0; iSrc < nSrcLength; ++iSrc)
 	{
-		if (lpszSrc[iSrc] == '.' || lpszSrc[iSrc] == '_' || lpszSrc[iSrc] == '-')
-		{
-			szUTF8TextA[iBuf] = (CHAR)lpszSrc[iSrc];
-		}
-		else if (lpszSrc[iSrc] == '+')
-		{
-			szUTF8TextA[iBuf] = ' ';
-		}
-		else if (lpszSrc[iSrc] == L'%' && isxdigit(lpszSrc[iSrc + 1]))
+		if (lpszSrc[iSrc] == L'%' && isxdigit(lpszSrc[iSrc + 1]))
 		{
 			WCHAR num[3] = { lpszSrc[iSrc + 1], lpszSrc[iSrc + 2], L'\0' };
 			szUTF8TextA[iBuf] = (CHAR)wcstol(num, 0, 16);
 			iSrc += 2;
+		}
+		else if (lpszSrc[iSrc] == L'+')
+		{
+			szUTF8TextA[iBuf] = ' ';
 		}
 		else
 		{
