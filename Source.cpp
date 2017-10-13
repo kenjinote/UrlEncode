@@ -115,7 +115,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case 100:
 		{
-			DWORD dwTextLength = GetWindowTextLengthW(hEdit1);
+			const DWORD dwTextLength = GetWindowTextLengthW(hEdit1);
 			if (dwTextLength == 0)break;
 			LPWSTR lpszEditText = (LPWSTR)GlobalAlloc(GMEM_FIXED, sizeof(WCHAR)*(dwTextLength + 1));
 			if (lpszEditText == NULL)break;
@@ -131,7 +131,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 		case 101:
 		{
-			DWORD dwTextLength = GetWindowTextLengthW(hEdit2);
+			const DWORD dwTextLength = GetWindowTextLengthW(hEdit2);
 			if (dwTextLength == 0)break;
 			LPWSTR lpszEditText = (LPWSTR)GlobalAlloc(GMEM_FIXED, sizeof(WCHAR)*(dwTextLength + 1));
 			if (lpszEditText == NULL)break;
