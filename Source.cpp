@@ -2,8 +2,6 @@
 
 #include <windows.h>
 
-TCHAR szClassName[] = TEXT("Window");
-
 ////////////////////////////////////////////
 // URL エンコード行う（文字コードはUTF-8で変換）
 // lpszSrc: URLエンコード対象の文字列(Unicode)
@@ -161,6 +159,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
+	TCHAR szClassName[] = TEXT("Window");
 	MSG msg;
 	WNDCLASS wndclass = {
 		CS_HREDRAW | CS_VREDRAW,
