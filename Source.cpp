@@ -20,11 +20,8 @@ int UrlEncode(LPCWSTR lpszSrc, LPWSTR lpszDst)
 	{
 		if (WideCharToMultiByte(CP_UTF8, 0, lpszSrc, -1, szUTF8TextA, dwTextLengthA, 0, 0))
 		{
-			DWORD iSrc = 0;
-			for (;;)
+			for (DWORD iSrc = 0; iSrc < dwTextLengthA && szUTF8TextA[iSrc] != '\0'; ++iSrc)
 			{
-				if (iSrc >= dwTextLengthA) break;
-				if (szUTF8TextA[iSrc] == '\0') break;
 				LPCSTR lpszUnreservedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
 				if (StrChrA(lpszUnreservedCharacters, szUTF8TextA[iSrc]))
 				{
@@ -41,7 +38,6 @@ int UrlEncode(LPCWSTR lpszSrc, LPWSTR lpszDst)
 					if (lpszDst) wsprintfW(&lpszDst[iDst], L"%%%02X", szUTF8TextA[iSrc] & 0xFF);
 					iDst += 3;
 				}
-				++iSrc;
 			}
 			if (lpszDst) lpszDst[iDst] = L'\0';
 			++iDst;
