@@ -117,33 +117,53 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case 100:
 		{
 			const DWORD dwTextLength = GetWindowTextLengthW(hEdit1);
-			if (dwTextLength == 0)break;
-			LPWSTR lpszEditText = (LPWSTR)GlobalAlloc(GMEM_FIXED, sizeof(WCHAR)*(dwTextLength + 1));
-			if (lpszEditText == NULL)break;
-			GetWindowTextW(hEdit1, lpszEditText, dwTextLength + 1);
-			SetWindowText(hEdit2, 0);
-			const int nSize = UrlEncode(lpszEditText, 0);
-			LPWSTR lpszEncodeText = (LPWSTR)GlobalAlloc(0, sizeof(WCHAR)*nSize);
-			UrlEncode(lpszEditText, lpszEncodeText);
-			SetWindowTextW(hEdit2, lpszEncodeText);
-			GlobalFree(lpszEncodeText);
-			GlobalFree(lpszEditText);
+			if (dwTextLength)
+			{
+				LPWSTR lpszEditText = (LPWSTR)GlobalAlloc(GMEM_FIXED, sizeof(WCHAR)*(dwTextLength + 1));
+				if (lpszEditText)
+				{
+					GetWindowTextW(hEdit1, lpszEditText, dwTextLength + 1);
+					SetWindowText(hEdit2, 0);
+					const int nSize = UrlEncode(lpszEditText, 0);
+					if (nSize)
+					{
+						LPWSTR lpszEncodeText = (LPWSTR)GlobalAlloc(0, sizeof(WCHAR)*nSize);
+						if (lpszEncodeText)
+						{
+							UrlEncode(lpszEditText, lpszEncodeText);
+							SetWindowTextW(hEdit2, lpszEncodeText);
+							GlobalFree(lpszEncodeText);
+						}
+					}
+					GlobalFree(lpszEditText);
+				}
+			}
 		}
 		break;
 		case 101:
 		{
 			const DWORD dwTextLength = GetWindowTextLengthW(hEdit2);
-			if (dwTextLength == 0)break;
-			LPWSTR lpszEditText = (LPWSTR)GlobalAlloc(GMEM_FIXED, sizeof(WCHAR)*(dwTextLength + 1));
-			if (lpszEditText == NULL)break;
-			GetWindowTextW(hEdit2, lpszEditText, dwTextLength + 1);
-			SetWindowText(hEdit1, 0);
-			const int nSize = UrlDecode(lpszEditText, 0);
-			LPWSTR lpszDecodeText = (LPWSTR)GlobalAlloc(0, sizeof(WCHAR)*nSize);
-			UrlDecode(lpszEditText, lpszDecodeText);
-			SetWindowTextW(hEdit1, lpszDecodeText);
-			GlobalFree(lpszDecodeText);
-			GlobalFree(lpszEditText);
+			if (dwTextLength)
+			{
+				LPWSTR lpszEditText = (LPWSTR)GlobalAlloc(GMEM_FIXED, sizeof(WCHAR)*(dwTextLength + 1));
+				if (lpszEditText)
+				{
+					GetWindowTextW(hEdit2, lpszEditText, dwTextLength + 1);
+					SetWindowText(hEdit1, 0);
+					const int nSize = UrlDecode(lpszEditText, 0);
+					if (nSize)
+					{
+						LPWSTR lpszDecodeText = (LPWSTR)GlobalAlloc(0, sizeof(WCHAR)*nSize);
+						if (lpszDecodeText)
+						{
+							UrlDecode(lpszEditText, lpszDecodeText);
+							SetWindowTextW(hEdit1, lpszDecodeText);
+							GlobalFree(lpszDecodeText);
+						}
+					}
+					GlobalFree(lpszEditText);
+				}
+			}
 		}
 		break;
 		}
